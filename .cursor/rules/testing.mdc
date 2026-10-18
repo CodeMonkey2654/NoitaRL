@@ -1,0 +1,53 @@
+---
+description: Unit vs integration pytest, TestClass per type, markers, isolation.
+alwaysApply: true
+---
+
+# Tests
+
+Python tests live under `tests/unit` and `tests/integration`. Default collection excludes the game.
+
+## Layout
+
+`tests/unit` mirrors `src/noitarl`. One test module per source module at the same relative path.
+
+```
+src/noitarl/worker.py
+tests/unit/noitarl/test_worker.py
+```
+
+`tests/integration` holds end-to-end checks: `Worker` train or evaluate, env invariants across many steps, MLflow run record smoke. Integration modules name the invariant, not a single class file.
+
+A flat `tests/test_*.py` pile or duplicate trees under `tests/noitarl` are wrong.
+
+## Class shape
+
+One `Test<ClassName>` per production class in the matching unit file. Public behavior gets a `test_*` method on that class. Two outcomes are two methods on the same class, not two free functions.
+
+Use `@pytest.fixture` on the class or in `tests/conftest.py` for shared construction. Prefer typed fixtures.
+
+A test asserts the return or the error. Use `pytest.raises` for documented failure modes.
+
+Cover each public method at least once. Do not add tests that only restate types or library defaults.
+
+## Unit vs integration
+
+Unit tests construct the type under test with fakes, tmp paths, or in-memory peers. They do not start Noita, long training, or multi-minute PPO runs.
+
+Integration tests build from `Settings` (or the test `settings` fixture), run a bounded budget, and assert externally visible results: run status, artifacts, metrics keys, env frame contract.
+
+Training production step counts are not tests. A short train inside integration with a fixed small step budget is a test.
+
+## Markers and commands
+
+`game` means a running Noita instance on Windows. Mark Noita lockstep integration tests with `@pytest.mark.game`.
+
+Default: `uv run pytest` (excludes `game` via `addopts`).
+
+Game: `uv run pytest -m game`.
+
+## conftest
+
+`tests/conftest.py` supplies isolated MLflow URIs under `tmp_path`, a `settings` fixture that does not read the developer `.env`, and autouse cleanup so runs do not leak across tests.
+
+Tests never write to the repo `mlruns/` tree.

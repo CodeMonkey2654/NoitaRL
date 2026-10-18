@@ -1,0 +1,24 @@
+---
+description: uv, ruff, ty, pytest, MLflow for Python experiments.
+alwaysApply: true
+---
+
+# Tools
+
+Python experiments live in `src/noitarl` and use uv. Ruff formats and lints. Ty typechecks. Do not add a requirements file, a setup.py, or a second package manager.
+
+Install dev tools: `uv sync --group dev`. Optional Crafter benchmark: `crafter` is a project dependency when the Crafter env is enabled.
+
+## pytest
+
+- Default: `uv run pytest` (unit + integration, excludes `game`).
+- Noita on Windows: `uv run pytest -m game`.
+- Check layout: `uv run ruff check src tests` and `uv run ty check src`.
+
+Markers and trees are defined in `testing.mdc`.
+
+## MLflow
+
+Runs use a tracking URI from settings, often SQLite under a run directory. Log params, tags, metrics, `settings.json`, checkpoints, and chart artifacts. Episode `return` is the primary training scalar unless a stage defines channel metrics. For Noita, unlock score, confirmed spells, and mismap rate are allowed movers.
+
+No comments in Python or Rust unless a future crate change explicitly needs them.

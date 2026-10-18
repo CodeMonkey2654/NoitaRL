@@ -1,0 +1,38 @@
+---
+description: Settings, Worker, env and agent registries, MLflow, module boundaries.
+alwaysApply: true
+---
+
+# Architecture
+
+The entrypoint is `Worker(settings).run("train" | "evaluate" | "record")`. `Settings` is pydantic-settings: nested models, env vars with `__` nesting, code defaults, optional `.env`. No YAML.
+
+`Worker` builds the environment from `settings.environment.kind`, the agent from `settings.agent.kind`, and a `Tracker` for the run. Registries map kind strings to concrete classes. Add a kind by registering one class and one settings slice, not a parallel factory layer.
+
+## Environments
+
+Multiple environment kinds coexist. **Crafter** is the default hard benchmark for Mac CI and framework work. **Noita** is the real lockstep game env; it is optional at import time and tested with `@pytest.mark.game`.
+
+Do not ship a toy platformer or a mock labeled as Noita. Adapters wrap real simulators and honor the gymnasium five-tuple plus the project `info` contract.
+
+Deep packages under `src/noitarl` are intentional when each directory is a boundary: wire, environment implementation, agent, tracking, evaluation helpers. Empty `__init__.py`, no barrel re-exports, no file whose only job is forwarding one library call.
+
+## Agent
+
+Agents adapt Stable-Baselines3 (or a single explicit loop later). Hyperparameters live in `settings.agent`. The worker calls `learn`, `predict`, `save`, and `load` through the agent interface.
+
+## MLflow
+
+`Tracker` is the only module that imports `mlflow` for run lifecycle. A run records name, tags, flattened params, a `settings.json` artifact, metrics, checkpoints, traces where useful, and small chart PNGs under predictable artifact paths.
+
+Metric names are plain language or stable prefixes (`return`, `eval/...`, `env/...`). Document tunable knobs in `documentation/design.md` and `documentation/mlflow.md`.
+
+Reject large evaluation suites copied from abandoned design docs: no report HTML factory, death taxonomy, or statistics crate unless a milestone asks for them.
+
+## Noita-specific semantics
+
+When the kind is Noita, `environment.mdc` governs wire actions, echo verification, reward channels, workshop, and frame skip K. Python env code does not rewrite those rules.
+
+## Out of scope
+
+Rust crates are not the source of truth for Python layout. Do not add pixels pipelines, Telegram, cloud trainers, or world models to this repo.

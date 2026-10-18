@@ -1,0 +1,43 @@
+---
+description: Empty packages, top-level imports, tests that mirror src.
+alwaysApply: true
+---
+
+# Modules
+
+An `__init__.py` is empty. It marks the package. It does not define a type, assign `__all__`, or import a name so another file can import it from the package.
+
+The import path is the module that defines the name.
+
+```python
+from noitarl.environment.crafter import CrafterEnvironment
+```
+
+`from noitarl.environment import Platformer` is a reimport through a barrel. Delete the barrel and import the defining module.
+
+Imports sit at the top of the file, after `from __future__ import annotations`, grouped as stdlib, third party, then this package. An import inside a function, a method, or a branch does not belong in the file.
+
+```python
+def load_context(self, context: mlflow.pyfunc.PythonModelContext) -> None:
+    from stable_baselines3 import PPO
+```
+
+That import belongs with the others at the top. A circular import is a wrong module cut, not a reason to import late.
+
+## Tests
+
+The tree under `tests/unit/` mirrors the tree under `src/noitarl/`. One test module per source module, at the same relative path.
+
+```
+src/noitarl/worker.py
+tests/unit/noitarl/test_worker.py
+```
+
+```
+src/noitarl/tracker.py
+tests/unit/noitarl/test_tracker.py
+```
+
+End-to-end tests live in `tests/integration/`. See `testing.mdc` for class naming and markers.
+
+A flat `tests/test_*.py` pile is the wrong tree.

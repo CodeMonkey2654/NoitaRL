@@ -1,0 +1,43 @@
+---
+description: Code is the argument. Delete first. Types carry the story.
+alwaysApply: true
+---
+
+# Write code that reads
+
+The failure mode is invented, wrapped, or opaque code someone then has to strip out. A reader finishes a function in one pass. The name is the sentence. The body is that sentence, in order.
+
+Do not append to a rule. A one-off stays in the code. Do not write a doc unless asked.
+
+Delete anything the asked change does not need, and drop the old path with it. A shim, extra field, extra table, extra class, or extra file the change does not need is slop. Do not keep "just in case."
+
+Stay in this repo. Pixels, Telegram, Azure, Groq, and a world model do not belong here.
+
+## Class shape
+
+A type reads as the domain story, questions asked and answered in order. Behavior lives on the object as a method. A private function that hides a few lines, a class whose body is one string format, and a method that only forwards are not structure.
+
+A function whose body is one expression is that expression. A method that calls one library function and returns is that call. A class whose methods each forward to one library is that library.
+
+```python
+def log_metric(self, key: str, value: float, step: int) -> None:
+    mlflow.log_metric(key, value, step=step)
+```
+
+That method is `mlflow.log_metric`. Call it at the use site.
+
+A no-arg method is a property. A method that takes a string to pick a behavior is two properties. An empty subclass is the parent. Two sibling types for one idea are one type. A later branch for a case an earlier predicate already returned is dead.
+
+Return one typed object. Equality lives on the model. Use the enum. Let the type fail closed. Do not re-check a value the layer above already typed, and do not catch an error you raised to parse it again.
+
+Do not wrap ugliness. If a schema, gate, or parser is hard to read, reduce the shape. Constructor collaborators are required. An optional None that dodges a second constructor is a missing constructor.
+
+An abstraction is a boundary that decides, holds, or hides something the caller should not touch. A type that holds nothing the caller needed hidden, and decides nothing the caller could not say, is deleted. The caller uses the thing underneath.
+
+## Seams
+
+`protocol` is the wire. `verify` judges a command against the echo. `reward` maps two observations to one channel vector. `gridworld` is the simulator this machine can run. `env` is the step barrier. A model does not import a service.
+
+A test asserts the return or the error. Two cases are two `test_*` methods on the same `TestClass`.
+
+No comments. Names carry the sentence.

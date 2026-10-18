@@ -1,0 +1,18 @@
+---
+description: Named actions, echoed actuation, and the reward vector.
+alwaysApply: true
+---
+
+# Environment
+
+Commands are named. `move` is idle, left, or right. `wand` aims the held deck. `hands` picks up or cycles wands. Bools are bools. Reset is `{"v":1,"action":"reset"}`. A positional array is a protocol mismatch.
+
+Workshop edits are legal only while `loadout.in_workshop`. `loadout.editing` is the open visit. `done` clears `editing` and leaves the volume flag alone. Physics does not advance during the visit.
+
+`applied` is what the peer decoded. The echo is what remained after the poll. A protocol mismatch drops before any actuation check. An actuation mismatch drops the transition. An excuse stays in the rollout and is not a mismatch. A dropped step is absent from the buffer. Do not impute the action you wish had happened.
+
+The field vector is `achievement`, `progress`, `survival`, `explore`, `combat`, `craft`, and `cost`. Progress and survival use `γΦ' − Φ` with `γ = 0.99`. Φ progress is the monotone biome index plus half a holy mountain. Craft pays about `+1` the first time an `action_id` is confirmed by a shot that hit, killed, or extended a ray, and `0` on a recast. No channel pays for mana, delay, recharge, capacity, shuffle, portal distance, Manhattan distance, or a DPS estimate.
+
+The workshop return is `+1` when a spell that visit newly placed is later confirmed, otherwise `0`. Do not back a kill up through the visit with the field discount.
+
+Frame skip is 4. A slip is counted. It is not a second learner.
