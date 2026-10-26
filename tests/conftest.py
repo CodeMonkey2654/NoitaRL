@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import mlflow
@@ -17,6 +18,13 @@ from noitarl.settings import (
 from noitarl.tracker import Tracker
 
 
+def _test_n_workers() -> int:
+    raw = os.environ.get("NOITARL_TEST_N_WORKERS")
+    if raw is None:
+        return 1
+    return max(1, int(raw))
+
+
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
     return Settings(
@@ -26,7 +34,7 @@ def settings(tmp_path: Path) -> Settings:
         agent=AgentSettings(
             total_steps=256,
             play_episodes=1,
-            n_workers=1,
+            n_workers=_test_n_workers(),
             n_steps=64,
             distill=DistillSettings(enabled=False),
             encoder=EncoderSettings(channels=[16, 32, 32], outsize=64, hidden=128, nblock=1),
