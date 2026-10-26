@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings.sources import EnvSettingsSource, PydanticBaseSettingsSource
 
 
 class RunSettings(BaseModel):
@@ -70,6 +72,20 @@ class TrackingSettings(BaseModel):
     experiment: str = "noitarl"
 
 
+class _HpcSafeEnvSettingsSource(EnvSettingsSource):
+    def get_field_value(
+        self, field: FieldInfo, field_name: str
+    ) -> tuple[Any, str, bool]:
+        env_val, field_key, value_is_complex = super().get_field_value(field, field_name)
+        if (
+            field_name == "environment"
+            and isinstance(env_val, str)
+            and not env_val.lstrip().startswith(("{", "["))
+        ):
+            return None, field_key, value_is_complex
+        return env_val, field_key, value_is_complex
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -82,6 +98,18 @@ class Settings(BaseSettings):
     agent: AgentSettings = AgentSettings()
     evaluation: EvaluationSettings = EvaluationSettings()
     tracking: TrackingSettings = TrackingSettings()
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        hpc_env = _HpcSafeEnvSettingsSource(settings_cls, _init_state=env_settings._init_state)
+        return init_settings, hpc_env, dotenv_settings, file_secret_settings
 
     def flat(self) -> dict[str, str]:
         return _flatten("", self.model_dump(mode="json"))
