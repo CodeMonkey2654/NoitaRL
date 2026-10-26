@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=noitarl-test
 #SBATCH --partition=teaching
+#SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=32
 #SBATCH --mem=64G
 #SBATCH --time=08:00:00
